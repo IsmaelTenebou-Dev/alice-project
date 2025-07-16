@@ -26,16 +26,68 @@ const SidebarItem = ({ icon, label, href, active }: SidebarItemProps) => {
 const Sidebar = () => {
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   useEffect(() => {
     setMounted(true);
+    
+    // Close mobile menu when route changes
+    setIsMobileMenuOpen(false);
+  }, [pathname]);
+  
+  // Handle window resize
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) {
+        setIsMobileMenuOpen(false);
+      }
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
+  
   if (!mounted) {
     return null;
   }
   
+  // Mobile menu toggle button
+  const MobileMenuButton = () => (
+    <button 
+      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      className="lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md bg-white shadow-md"
+      aria-label="Toggle menu"
+    >
+      {isMobileMenuOpen ? (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="3" y1="12" x2="21" y2="12"></line>
+          <line x1="3" y1="6" x2="21" y2="6"></line>
+          <line x1="3" y1="18" x2="21" y2="18"></line>
+        </svg>
+      )}
+    </button>
+  );
+
   return (
-    <aside className="w-[240px] h-full flex flex-col bg-white shadow-sm border-r border-gray-100">
+    <>
+      <MobileMenuButton />
+      <div 
+        className="fixed inset-0 bg-black lg:bg-transparent z-30 transition-opacity duration-300 ease-in-out"
+        style={{ 
+          opacity: isMobileMenuOpen ? 0.5 : 0, 
+          pointerEvents: isMobileMenuOpen ? 'auto' : 'none',
+          visibility: isMobileMenuOpen ? 'visible' : 'hidden'
+        }}
+        onClick={() => setIsMobileMenuOpen(false)}
+      ></div>
+      <aside 
+        className={`${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0 fixed lg:static top-0 left-0 z-40 w-[240px] h-full flex flex-col bg-white shadow-sm border-r border-gray-100 transition-transform duration-300 ease-in-out overflow-y-auto`}
+      >
       <div className="p-6">
         <h1 className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>RemitNow</h1>
       </div>
@@ -77,34 +129,15 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* Avatar circles positioned as in the image */}
+      {/* Sidebar bottom section without avatar dots */}
       <div className="flex flex-col flex-1 justify-end px-4 pb-6">
-        <div className="flex flex-col items-center">
-          <div className="self-center mb-6">
-            <div className="w-10 h-10 rounded-full grid place-items-center text-white font-medium shadow-md" style={{ backgroundColor: '#8b5cf6' }}>
-              A
-            </div>
-          </div>
-          
-          <div className="self-center mb-6">
-            <div className="w-10 h-10 rounded-full grid place-items-center text-white font-medium shadow-md" style={{ backgroundColor: '#8b5cf6' }}>
-              A
-            </div>
-          </div>
-          
-          <div className="self-end mb-10">
-            <div className="w-10 h-10 rounded-full grid place-items-center text-white font-medium shadow-md" style={{ backgroundColor: '#8b5cf6' }}>
-              A
-            </div>
-          </div>
-        </div>
-
         <Link href="/logout" className="flex items-center gap-3 px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><polyline points="16 17 21 12 16 7" /><line x1="21" y1="12" y2="12" x2="9" /></svg>
           <span>Log Out</span>
         </Link>
       </div>
     </aside>
+    </>
   );
 };
 
